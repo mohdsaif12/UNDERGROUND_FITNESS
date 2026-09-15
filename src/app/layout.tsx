@@ -52,7 +52,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col bg-[#131313] text-[#e5e2e1] font-sans">
         <TopHeader />
-        <div className="flex-1 w-full max-w-lg mx-auto">
+        <div className="flex-1 w-full">
           {children}
         </div>
         <BottomNav />
@@ -61,4 +61,5 @@ export default function RootLayout({
     </html>
   )
 }
+
 

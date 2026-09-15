@@ -1,29 +1,67 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useUserStore } from '@/store/user'
+import { UserModal } from '@/components/user-modal'
 
 export function TopHeader() {
   const pathname = usePathname()
+  const { name, isLoggedIn, logout } = useUserStore()
+  const [showEditModal, setShowEditModal] = useState(false)
+
   if (pathname.startsWith('/dashboard')) return null
 
   return (
-    <header className="fixed top-0 inset-x-0 z-50 bg-[#131313]/85 backdrop-blur-xl pt-safe shadow-[0_1px_12px_rgba(0,0,0,0.4)] border-b border-[#2a2a2a]">
-      <div className="h-16 px-4 flex items-center justify-between max-w-lg mx-auto">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="font-headline-sm text-lg uppercase text-white tracking-tight font-black">Underground</span>
-          <span className="px-2 py-0.5 bg-[#caf300] text-[#2a3400] font-label-sm text-[10px] uppercase rounded font-bold tracking-wider">
-            Jimmy Cafe
-          </span>
-        </Link>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-[#2a2a2a]">
-            <span className="w-2 h-2 rounded-full bg-[#bfd42e] animate-pulse" />
-            <span className="font-label-sm text-[10px] uppercase text-[#bfd42e] font-bold">Live</span>
+    <>
+      <header className="fixed top-0 inset-x-0 z-50 bg-[#131313]/90 backdrop-blur-xl pt-safe shadow-[0_1px_12px_rgba(0,0,0,0.4)] border-b border-[#2a2a2a]">
+        <div className="h-16 px-4 flex items-center justify-between max-w-lg mx-auto">
+          <Link href="/menu" className="flex items-center gap-2">
+            <span className="font-headline-sm text-lg uppercase text-white tracking-tight font-black">Underground</span>
+            <span className="px-2 py-0.5 bg-[#caf300] text-[#2a3400] font-label-sm text-[10px] uppercase rounded font-bold tracking-wider">
+              Jimmy Cafe
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-2">
+            {isLoggedIn ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setShowEditModal(true)}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#201f1f] border border-[#2a2a2a] hover:border-[#caf300] transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-[#caf300] animate-pulse" />
+                  <span className="font-label-sm text-[10px] uppercase text-white font-bold truncate max-w-[90px]">
+                    {name.split(' ')[0]}
+                  </span>
+                </button>
+
+                <button
+                  onClick={logout}
+                  className="p-1 rounded text-[#8f9378] hover:text-red-400 transition-colors"
+                  title="Logout"
+                >
+                  <span className="material-symbols-outlined text-[18px]">logout</span>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="px-2.5 py-1 rounded bg-[#caf300] text-[#2a3400] font-label-sm text-[10px] uppercase font-bold"
+              >
+                Sign In
+              </button>
+            )}
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <UserModal
+        openOverride={showEditModal}
+        onCloseOverride={() => setShowEditModal(false)}
+      />
+    </>
   )
 }
 
@@ -69,3 +107,4 @@ export function BottomNav() {
     </nav>
   )
 }
+

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/store/cart'
+import { useUserStore } from '@/store/user'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
@@ -17,12 +18,18 @@ export default function CartPage() {
     totalPrepMinutes,
     totalItems,
   } = useCartStore()
+  const { name: savedName, phone: savedPhone, setUserProfile } = useUserStore()
   const router = useRouter()
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [selectedPay, setSelectedPay] = useState<'upi' | 'card' | 'apple'>('upi')
   const [selectedCarb, setSelectedCarb] = useState('brown')
   const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (savedName) setName(savedName)
+    if (savedPhone) setPhone(savedPhone)
+  }, [savedName, savedPhone])
 
   const handleOrder = async () => {
     if (!name.trim()) {
@@ -37,6 +44,10 @@ export default function CartPage() {
       toast.error('Cart is empty')
       return
     }
+
+    // Save profile to store
+    setUserProfile(name.trim(), phone.trim())
+
 
     setSubmitting(true)
     try {

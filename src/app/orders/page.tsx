@@ -1,18 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import { useUserStore } from '@/store/user'
 import type { Order } from '@/lib/types'
 
 export default function OrdersPage() {
+  const { name: savedName, phone: savedPhone, isLoggedIn } = useUserStore()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(false)
   const [phone, setPhone] = useState('')
   const [searched, setSearched] = useState(false)
 
-  const search = async () => {
-    if (!phone || phone.length < 10) return
+  const fetchOrdersForPhone = useCallback(async (targetPhone: string) => {
+    if (!targetPhone || targetPhone.length < 10) return
     setLoading(true)
     setSearched(true)
 
@@ -20,13 +22,25 @@ export default function OrdersPage() {
     const { data } = await supabase
       .from('orders')
       .select('*')
-      .eq('customer_phone', phone)
+      .eq('customer_phone', targetPhone)
       .order('created_at', { ascending: false })
-      .limit(20)
+      .limit(30)
 
     setOrders((data as Order[]) ?? [])
     setLoading(false)
+  }, [])
+
+  useEffect(() => {
+    if (savedPhone) {
+      setPhone(savedPhone)
+      fetchOrdersForPhone(savedPhone)
+    }
+  }, [savedPhone, fetchOrdersForPhone])
+
+  const handleSearch = () => {
+    fetchOrdersForPhone(phone)
   }
+
 
   return (
     <div className="flex flex-col relative w-full pt-16 pb-28 bg-[#131313] min-h-screen">
@@ -49,18 +63,19 @@ export default function OrdersPage() {
               placeholder="ENTER 10-DIGIT PHONE..."
               value={phone}
               onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-              onKeyDown={(e) => e.key === 'Enter' && search()}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="w-full h-12 pl-10 pr-4 rounded bg-[#1c1b1b] border border-[#2a2a2a] text-xs font-mono text-white placeholder-[#8f9378] outline-none focus:border-[#caf300] transition-colors"
             />
           </div>
           <button
             type="button"
-            onClick={search}
+            onClick={handleSearch}
             disabled={phone.length < 10}
             className="h-12 px-5 rounded bg-[#caf300] hover:bg-[#b0d500] text-[#2a3400] font-headline-sm text-xs uppercase font-black tracking-wider disabled:opacity-40 transition-all"
           >
             Search
           </button>
+
         </div>
 
         {loading && (
