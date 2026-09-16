@@ -42,7 +42,7 @@ export default function SettingsPage() {
   useEffect(() => {
     async function load() {
       const [{ data: s }, { data: m }] = await Promise.all([
-        supabase.from('settings').select('*').eq('id', 'main').single(),
+        supabase.from('settings').select('*').eq('id', 'main').maybeSingle(),
         supabase.from('menu_items').select('*').order('category').order('sort_order'),
       ])
       setSettings(s as Settings)

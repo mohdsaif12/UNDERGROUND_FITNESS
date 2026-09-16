@@ -11,15 +11,20 @@ export default async function OrderPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const supabase = await createClient()
+  try {
+    const supabase = await createClient()
 
-  const { data: order, error } = await supabase
-    .from('orders')
-    .select('*')
-    .eq('id', id)
-    .single()
+    const { data: order, error } = await supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle()
 
-  if (error || !order) return notFound()
+    if (error || !order) return notFound()
 
-  return <OrderTokenClient order={order as Order} />
+    return <OrderTokenClient order={order as Order} />
+  } catch (err) {
+    console.error('Error fetching order:', err)
+    return notFound()
+  }
 }
